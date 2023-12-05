@@ -1,8 +1,5 @@
 import random
-import create_grid as np
 
-# Création d'un tableau 4x4 rempli de zéros
-tableau = np.zeros((4, 4), dtype=int)
 
 # Fonction pour déplacer un point dans le tableau en évitant les bords
 def deplacer_point(position, direction):

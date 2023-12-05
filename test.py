@@ -36,7 +36,12 @@ def place_random_numbers(grid):
         grid[i2][j2] = num2
 
 def move_numbers(grid, direction):
-    x,y = grid[x][y]
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            if "[2]" in grid[i][j] or "[4]" in grid[i][j]:
+                x, y = i, j
+                break
+
     if (
         (direction == "w" and y > 0)
         or (direction == "s" and y < 3)
@@ -44,35 +49,19 @@ def move_numbers(grid, direction):
         or (direction == "d" and x < 3)
     ):
         # Déplacer le point
+        grid[x][y] = "[ ]"
         if direction == "w":
-            y -= 1
+            y = 0
         elif direction == "s":
-            y += 1
+            y =+ 3
         elif direction == "a":
-            x -= 1
+            x = 0
         elif direction == "d":
-            x += 1
+            x = 3
 
-    return x,y
+        return grid[x][y]
 
-    # Mettre à jour le tableau 'grid' en fonction de la direction choisie
-
-    # Code principal
-    grid = grid_init()
     place_random_numbers(grid)
-    grid_display(grid)
-
-while True:
-    move = input("Déplacez avec les touches directionnelles (w/s/a/d) ou 'q' pour quitter: ").lower()
-
-    if move == 'q':
-        break
-
-    move_numbers(grid, move)
-    place_random_numbers(grid)
-    grid_display(grid)
-
-
 
 def get_numbers():
     rand_num1 = random.randint(1, 10)
@@ -91,6 +80,16 @@ def get_numbers():
     return num1, num2
 
 
+# Exemple d'utilisation
 grid = grid_init()
 place_random_numbers(grid)
-grid_display(grid)    
+grid_display(grid)
+
+while True:
+    move = input("Déplacez avec les touches directionnelles (w/s/a/d) ou 'q' pour quitter: ").lower()
+
+    if move == 'q':
+        break
+
+    move_numbers(grid, move)
+    grid_display(grid)
