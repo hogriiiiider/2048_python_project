@@ -1,86 +1,107 @@
-class c2048:
+import random
+import os
 
-    def __init__(self, dim=4):
-        self.jeu = self.creer_jeu(dim)
-        self.coup = 0
-        self.score = 0
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
-    def creer_jeu(self, dim):
-        return creer_jeu(dim)
+def grid_init():
+    grid = [["[ ]", "[ ]", "[ ]", "[ ]"],
+            ["[ ]", "[ ]", "[ ]", "[ ]"],
+            ["[ ]", "[ ]", "[ ]", "[ ]"],
+            ["[ ]", "[ ]", "[ ]", "[ ]"],
+            ]
+    return grid
 
-    def __repr__(self):
-        return "coup=%d score=%d, jeu=\n%s" % (self.coup, self.score, self.jeu)
+def grid_display(grid):
+    clear_screen()
+    for row in grid:
+        print(''.join(row))
 
-    def position_libre(self):
-        pos = []
-        for i in range(self.jeu.shape[0]):
-            for j in range(self.jeu.shape[1]):
-                if self.jeu[i, j] == 0:
-                    pos.append((i, j))
-        return pos
+def place_random_numbers(grid):
+    empty_cells = [(i, j) for i in range(len(grid)) for j in range(len(grid[0])) if grid[i][j] == "[ ]"]
 
-    def calcule_score(self):
-        return self.jeu.max()
+    if empty_cells:
+        i1, j1 = random.choice(empty_cells)
+        empty_cells.remove((i1, j1))
+        i2, j2 = random.choice(empty_cells)
+        empty_cells.remove((i2, j2))
 
-    def joue_ligne_colonne(self, lc):
-        # on enlève les 0
-        non_null = [a for a in lc if a != 0]
-        # on additionne les nombres identiques consécutifs
-        i = len(non_null) - 1
-        while i > 0:
-            if non_null[i] != 0 and non_null[i] == non_null[i-1]:
-                non_null[i-1] *= 2
-                non_null[i] = 0
-                i -= 2
-            else:
-                i -= 1
-        # on enlève à nouveau les zéros
-        non_null2 = [a for a in non_null if a != 0]
-        final = numpy.zeros(len(lc), dtype=int)
-        final[:len(non_null2)] = non_null2
-        return final
+        grid[i1][j1] = get_numbers()
+        grid[i2][j2] = get_numbers()
+    else:
+        is_game_over(grid)
+   
 
-    def joue_coup(self, direction):
-        if direction == 0:  # gauche
-            for i in range(self.jeu.shape[0]):
-                self.jeu[i, :] = joue_ligne_colonne(self.jeu[i, :])
-        elif direction == 1:  # droite
-            for i in range(self.jeu.shape[0]):
-                self.jeu[i, ::-1] = joue_ligne_colonne(self.jeu[i, ::-1])
-                # identique à
-                # self.jeu[i, :] = joue_ligne_colonne(self.jeu[i, ::-1])[::-1]
-        elif direction == 2:  # haut
-            for i in range(self.jeu.shape[0]):
-                self.jeu[:, i] = joue_ligne_colonne(self.jeu[:, i])
-        elif direction == 3:  # bas
-            for i in range(self.jeu.shape[0]):
-                self.jeu[::-1, i] = joue_ligne_colonne(self.jeu[::-1, i])
+def get_numbers():
+    rand_num1 = random.randint(1, 10)
 
-    def nombre_aleatoire(self):
-        pos = self.position_libre()
-        nb = numpy.random.randint(0, 2) * 2 + 2
-        i = numpy.random.randint(0, len(pos))
-        p = pos[i]
-        self.jeu[p] = nb
+    if rand_num1 <= 9:
+        num1 = "[2]"
+    else:
+        num1 = "[4]"
 
-    def perdu(self):
-        pos = self.position_libre()
-        return len(pos) == 0
+    return num1
+def move_numbers(grid, direction):
+    moved = False
 
-    def coup_suivant(self):
-        # une direction aléatoire parmi 0 ou 4
-        h = numpy.random.randint(0, 2)
-        return h * 2
+    if direction == "z":
+        for j in range(len(grid[0])):
+            for i in range(1, len(grid)):
+                if grid[i][j] != "[ ]":
+                    moved |= move_cell(grid, i, j, i - 1, j)
 
-    def partie(self):
-        self.coup = 0
-        while not self.perdu():
-            self.nombre_aleatoire()
-            d = self.coup_suivant()
-            self.joue_coup(d)
-            self.coup += 1
-        self.score = self.calcule_score()
+    elif direction == "s":
+        for j in range(len(grid[0])):
+            for i in range(len(grid) - 2, -1, -1):
+                if grid[i][j] != "[ ]":
+                    moved |= move_cell(grid, i, j, i + 1, j)
 
-J = c2048()
-J.partie()
-J
+    elif direction == "q":
+        for i in range(len(grid)):
+            for j in range(1, len(grid[0])):
+                if grid[i][j] != "[ ]":
+                    moved |= move_cell(grid, i, j, i, j - 1)
+
+    elif direction == "d":
+        for i in range(len(grid)):
+            for j in range(len(grid[0]) - 2, -1, -1):
+                if grid[i][j] != "[ ]":
+                    moved |= move_cell(grid, i, j, i, j + 1)
+
+    if moved:
+        place_random_numbers(grid)
+
+
+def move_cell(grid, x, y, new_x, new_y):
+    if grid[new_x][new_y] == "[ ]":
+        grid[new_x][new_y] = grid[x][y]
+        grid[x][y] = "[ ]"
+        return True
+    elif grid[new_x][new_y] == grid[x][y]:
+        merged_value = int(grid[x][y][1]) * 2
+        grid[new_x][new_y] = "[{}]".format(merged_value)
+        grid[x][y] = "[ ]"
+        return True
+    return False
+
+
+def is_game_over(grid):
+    is_board_full = not any("[ ]" in (i, j) for i in range(len(grid)) for j in range(len(grid[0])) if grid[i][j] )
+
+
+# Exemple d'utilisation
+grid = grid_init()
+place_random_numbers(grid)
+
+while True:
+    grid_display(grid)
+
+    move = input("Déplacez avec les touches directionnelles (z/s/q/d) ou 'a' pour quitter: ").lower()
+
+    if move == 'a':
+        break
+    if is_game_over(grid):
+        print("Vous avez perdu ")
+        break
+
+    move_numbers(grid, move)

@@ -21,9 +21,6 @@ def grid_display(grid):
         while j < col_count:
             print(grid[i][j], end="")
             j += 1
-
-        print("\n")
-
         i += 1
 
 def place_random_numbers(grid):
